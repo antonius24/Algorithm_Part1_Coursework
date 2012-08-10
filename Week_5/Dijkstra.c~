@@ -1,0 +1,119 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
+#include <string.h>
+#include "Heap.h"
+#include "Dijkstra.h"
+
+#define MAX_NODE 300
+
+linkList *lists; // record the adjacent list
+
+//print sub link list
+void PrintListRow(int row_index)
+{
+  listNode *index;
+  index = *(lists+row_index);
+  while (index != NULL)
+  {
+    printf("%d | %d  --->   ", index->node_num, index->length);
+    index = index->next;
+  }
+  printf("\n");
+  return;
+}
+
+
+//link list insert node
+void InsertNode(int row_index, int node, int length)
+{
+  listNode *index;
+  listNode *pre;
+  
+  if (*(lists+row_index) == NULL)
+  {
+    *(lists+row_index) = (listNode *)malloc(sizeof(struct node));
+    index = *(lists+row_index);
+    index->node_num = node;
+    index->length = length;
+    index->next = NULL;
+  }
+  else
+  {
+    index = *(lists+row_index);
+    pre = *(lists+row_index);
+    while (index != NULL)
+    {
+      pre = index;
+      index = index->next;
+    }
+    index = (listNode *)malloc(sizeof(struct node));
+    index->node_num = node;
+    index->length = length;
+    index->next = NULL;
+    if (pre != NULL)
+    {
+      pre->next = index;
+    }
+  }
+  return;
+}
+
+
+void ReadGraphFile()
+{
+  int length;
+  int row_index;
+  char buf[300];
+  char **bufs;
+  char *num_string;
+  char *num_node;
+  char *num_length;
+  FILE *fp;
+  
+  bufs = (char **)malloc(sizeof(char *) * MAX_NODE);
+  if ((fp = fopen("dijkstraData.txt", "r")) == NULL)
+  {
+    printf("File error!\n");
+    exit(1);
+  }
+
+
+  while (fgets(buf, 300, fp) != NULL)
+  {
+    int bufs_index = 0;
+    length = strlen(buf);
+    buf[length-1] = '\0';
+    num_string = strtok(buf,"	");
+    row_index = atoi(num_string)-1;
+    num_string = strtok(NULL, "	");
+    while(num_string != NULL)
+    {
+      *(bufs+bufs_index) = (char *)malloc(sizeof(char) * 30);
+      *(bufs+bufs_index) = num_string;
+      bufs_index++;
+      num_string = strtok(NULL, "	");   
+    }
+    int i;
+     
+    for (i=0; i<bufs_index; i++)
+    {
+      num_node = strtok(*(bufs+i),",");
+      num_length = strtok(NULL, "	");
+      InsertNode(row_index, atoi(num_node), atoi(num_length));
+    }
+    free(bufs);
+    PrintListRow(row_index);
+  }
+}
+
+
+
+
+int main()
+{
+  lists = (linkList *)malloc(sizeof(linkList) * MAX_NODE);
+  ReadGraphFile();
+}
+
+
